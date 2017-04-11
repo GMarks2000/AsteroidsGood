@@ -21,11 +21,15 @@ namespace Asteroids
 
         private void replayButton_Click(object sender, EventArgs e)
         {
-            //closes game over screen and opens game screen
-            Form f = this.FindForm();
-            f.Controls.Remove(this);
-            GameScreen gs = new GameScreen();
-            f.Controls.Add(gs);
+            try
+            {
+                //closes game over screen and opens game screen
+                Form f = this.FindForm();
+                f.Controls.Remove(this);
+                GameScreen gs = new GameScreen();
+                f.Controls.Add(gs);
+            }
+            catch { }
 
         }
 

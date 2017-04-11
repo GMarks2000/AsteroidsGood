@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Media;
+
 
 namespace Asteroids
 {
@@ -29,6 +31,7 @@ namespace Asteroids
         List<Explosion> explosions = new List<Explosion>();
         List<Star> stars = new List<Star>();
 
+        SoundPlayer boom = new SoundPlayer(Properties.Resources.boom);
 
         //integer variables
         int playerX, playerY, playerWidth, playerHeight, playerSpeed, ticks, bulletSize, bulletSpeed, shotTime, spawnRate;
@@ -43,9 +46,9 @@ namespace Asteroids
             //starts player at center screen
             playerX = this.Width / 2 - playerWidth / 2;
             playerY = this.Height / 2 - playerHeight / 2;
-            playerHeight = 30;
-            playerWidth = 15;
-            playerSpeed = 5;
+            playerHeight = 34;
+            playerWidth = 18;
+            playerSpeed = 6;
             playerDir = "up";
             playerAlive = true;
 
@@ -60,7 +63,7 @@ namespace Asteroids
             Random rand = new Random();
 
             //randomly generates scren of stars
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 200; i++)
             {
                 
                 int x = rand.Next(0, this.Width);
@@ -122,12 +125,14 @@ namespace Asteroids
                     //kills player and adds an explosion. When this explosion dissiptes, the game will end.
                     playerAlive = false;
                     explosions.Add(new Explosion(playerX, playerY, 1));
+                    boom.Play();
                 }
 
                 //ends the game when the player is dead and the last explosion is gone
                 if (playerAlive == false && explosions.Count() == 0)
                 {
                     GameOver();
+
                 }
                 //checks for collision with every extant bullet
                 foreach (Bullet b in bullets)
@@ -145,8 +150,16 @@ namespace Asteroids
                         {
                             asteroids.Add(new Asteroid(a.x + a.size / 4, a.y + a.size / 4, a.size / 2, -Math.Abs(a.xSpeed / 2), -Math.Abs(a.ySpeed / 2)));
                             asteroids.Add(new Asteroid(a.x + a.size* 3/4, a.y + a.size * 3/4, a.size / 2, Math.Abs(a.xSpeed / 2), Math.Abs(a.ySpeed / 2)));
+
+                            //prevents daughter asteroids from being stationary by nonzeroing their directional speeds to travel on the side they spwn
+                            if (asteroids[asteroids.Count() - 1].xSpeed == 0) { asteroids[asteroids.Count() - 1].xSpeed = 1; }
+                            if (asteroids[asteroids.Count() - 1].ySpeed == 0) { asteroids[asteroids.Count() - 1].ySpeed = 1; }
+                            if (asteroids[asteroids.Count() - 2].xSpeed == 0) { asteroids[asteroids.Count() - 2].xSpeed = -1; }
+                            if (asteroids[asteroids.Count() - 2].ySpeed == 0) { asteroids[asteroids.Count() - 2].ySpeed = -1; }
                         }
 
+                        //plays boom effect                      
+                        boom.Play();
 
                         //removes asteroid and bullet and breaks both loops to prevent errors
                         asteroids.Remove(a);
@@ -185,7 +198,7 @@ namespace Asteroids
             //code for each star
             foreach (Star s in stars)
             {
-                s.Move(this);
+                if (ticks % 2 == 0) s.Move(this);
             }
 
             //asteroid generation
@@ -219,8 +232,8 @@ namespace Asteroids
                     default:
                         break;
                 }
-                //decreases the spawn rate of asteroids until a certain threshold
-                if (spawnRate > 15) { spawnRate--; }
+                //decreases the ticks per spawn of asteroids until a certain threshold
+                if (spawnRate > 8) { spawnRate--; }
                 
                 //
                 ticks = 0;
@@ -420,7 +433,7 @@ namespace Asteroids
 
             //putting this in a try/catch stops random crashes. I have absolutely no idea why.
             try {
-                f.Controls.Remove(this);
+               f.Controls.Remove(this);
                 GameOverScreen gos = new GameOverScreen();
                 f.Controls.Add(gos);
             }
